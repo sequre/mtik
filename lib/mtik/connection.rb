@@ -212,16 +212,18 @@ class MTik::Connection
             if MTik::debug || MTik::verbose
               sentence.each do |k, v|
                 if v.nil?
-                  STDERR.print ">>> '#{k}' (#{k.length})\n"
+                  $stderr.print ">>> '#{k}' (#{k.length})\n"
                 else
-                  STDERR.print ">>> '#{k}=#{v}' (#{k.length+v.length+1})\n"
+                  $stderr.print ">>> '#{k}=#{v.force_encoding('ISO-8859-1').encode('utf-8')}' (#{k.length+v.length+1})\n"
                 end
+              rescue StandardError => e
+                $stderr.print(e.message)
               end
               STDERR.print ">>> END-OF SENTENCE\n\n"
             end
             if sentence.key?('!fatal')
               ## Fatal error (or '/quit'):
-              close  ## Assume disconnection
+              close ## Assume disconnection
             end
             ## Finished. Return the sentence:
             return sentence
