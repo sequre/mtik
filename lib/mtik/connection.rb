@@ -430,7 +430,12 @@ class MTik::Connection
 
   def recv(buffer_size)
     if @ssl_sock
-      recv_openssl(buffer_size)
+      ## OpenSSL decrypts whole TLS records but returns at most buffer_size
+      ## bytes, keeping the rest in its own buffer, which IO.select can't see.
+      ## Drain it so get_sentence never waits for data that already arrived.
+      data = recv_openssl(buffer_size)
+      data += recv_openssl(@ssl_sock.pending) while @ssl_sock.pending > 0
+      data
     else
       @sock.recv(buffer_size)
     end
